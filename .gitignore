@@ -15,8 +15,6 @@ build/
 ycsb-0.17.0/
 ycsb-*.tar.gz
 
-# Results
-results/
 
 # IDE
 .idea/
