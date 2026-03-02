@@ -1,0 +1,113 @@
+# Experiment Configuration
+# MongoDB vs Cassandra YCSB Benchmark Suite
+
+# Database configurations
+databases:
+  mongodb:
+    host: localhost
+    port: 27017
+    container_name: ycsb-mongodb
+    ycsb_binding: mongodb
+    connection_properties:
+      mongodb.url: "mongodb://localhost:27017/ycsb?w=1"
+
+  cassandra:
+    host: localhost
+    port: 9042
+    container_name: ycsb-cassandra
+    ycsb_binding: cassandra-cql
+    connection_properties:
+      hosts: localhost
+      cassandra.readconsistencylevel: ONE
+      cassandra.writeconsistencylevel: ONE
+
+# YCSB configuration
+ycsb:
+  path: ycsb-0.17.0
+  # Uncomment and set this if JAVA_HOME is not set or Java is not on your PATH:
+  # java_home: /path/to/your/jdk
+  # ~1KB per record (10 fields x 100 bytes)
+  bytes_per_record: 1000
+
+# Dataset sizes in MB and their corresponding record counts
+dataset_sizes:
+  small:
+    label: "100 MB"
+    size_mb: 100
+    record_count: 100000
+  medium:
+    label: "1 GB"
+    size_mb: 1024
+    record_count: 1000000
+  large:
+    label: "10 GB"
+    size_mb: 10240
+    record_count: 10000000
+
+# Baseline configuration
+baseline:
+  dataset: medium         # 1 GB
+  threads: 10
+  operation_count: 100000
+  warmup_operation_count: 1000
+
+# Number of repetitions per configuration
+repetitions: 3
+
+# Experiment series
+series:
+  workload:
+    description: "Compare workloads A, B, F at baseline configuration"
+    workloads:
+      - name: workload_a
+        file: workloads/workload_a.properties
+        label: "Workload A (Update Heavy)"
+      - name: workload_b
+        file: workloads/workload_b.properties
+        label: "Workload B (Read Heavy)"
+      - name: workload_f
+        file: workloads/workload_f.properties
+        label: "Workload F (Read-Modify-Write)"
+    dataset: medium
+    threads: 10
+    operation_count: 100000
+
+  concurrency:
+    description: "Workload A at varying thread counts"
+    workloads:
+      - name: workload_a
+        file: workloads/workload_a.properties
+        label: "Workload A (Update Heavy)"
+    dataset: medium
+    thread_levels: [1, 10, 50, 100]
+    operation_count: 100000
+
+  dataset_size:
+    description: "Workload A at varying dataset sizes"
+    workloads:
+      - name: workload_a
+        file: workloads/workload_a.properties
+        label: "Workload A (Update Heavy)"
+    datasets: [small, medium, large]
+    threads: 10
+    operation_count: 100000
+
+  bulk_load:
+    description: "Bulk insert workload"
+    workloads:
+      - name: workload_bulk
+        file: workloads/workload_bulk.properties
+        label: "Bulk Load (100% Inserts)"
+    dataset: medium
+    threads: 10
+    operation_count: 100000
+
+  stress:
+    description: "Stress test - ramp threads to find saturation point"
+    workloads:
+      - name: workload_stress
+        file: workloads/workload_stress.properties
+        label: "Stress Test (Workload A)"
+    dataset: medium
+    thread_levels: [1, 10, 25, 50, 75, 100]
+    operation_count: 100000

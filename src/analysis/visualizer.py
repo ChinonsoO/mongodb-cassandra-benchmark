@@ -1,0 +1,426 @@
+"""Visualization module for benchmark results.
+
+Generates charts comparing MongoDB and Cassandra performance
+across different workloads, concurrency levels, and dataset sizes.
+"""
+
+import logging
+from pathlib import Path
+from typing import Any
+
+import matplotlib
+matplotlib.use("Agg")  # Non-interactive backend for file output
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+
+logger = logging.getLogger(__name__)
+
+# Set consistent style
+sns.set_theme(style="whitegrid", palette="muted")
+COLORS = {"mongodb": "#4DB33D", "cassandra": "#1287B1"}
+FIGSIZE = (10, 6)
+DPI = 150
+
+
+def plot_throughput_comparison(
+    results: list[dict[str, Any]],
+    output_path: str,
+    title: str = "Throughput Comparison: MongoDB vs Cassandra",
+) -> str:
+    """Generate a grouped bar chart comparing throughput per workload.
+
+    Args:
+        results: Aggregated results with 'database', 'workload_label',
+            'throughput_ops_sec_mean', 'throughput_ops_sec_std'.
+        output_path: Path to save the chart image.
+        title: Chart title.
+
+    Returns:
+        Path to the saved chart file.
+    """
+    fig, ax = plt.subplots(figsize=FIGSIZE)
+
+    databases = sorted(set(r["database"] for r in results))
+    workloads = sorted(set(r.get("workload_label", r.get("workload", "")) for r in results))
+
+    x = np.arange(len(workloads))
+    width = 0.35
+
+    for i, db in enumerate(databases):
+        db_results = [
+            r for r in results if r["database"] == db
+        ]
+        values = []
+        errors = []
+        for wl in workloads:
+            matching = [r for r in db_results if r.get("workload_label", r.get("workload", "")) == wl]
+            if matching:
+                values.append(matching[0].get("throughput_ops_sec_mean", 0))
+                errors.append(matching[0].get("throughput_ops_sec_std", 0))
+            else:
+                values.append(0)
+                errors.append(0)
+
+        offset = (i - len(databases) / 2 + 0.5) * width
+        bars = ax.bar(
+            x + offset,
+            values,
+            width,
+            yerr=errors,
+            label=db.capitalize(),
+            color=COLORS.get(db, None),
+            capsize=3,
+        )
+
+    ax.set_xlabel("Workload")
+    ax.set_ylabel("Throughput (ops/sec)")
+    ax.set_title(title)
+    ax.set_xticks(x)
+    ax.set_xticklabels(workloads, rotation=15, ha="right")
+    ax.legend()
+    ax.grid(axis="y", alpha=0.3)
+
+    plt.tight_layout()
+    fig.savefig(output_path, dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    logger.info(f"Throughput comparison chart saved to {output_path}")
+    return output_path
+
+
+def plot_latency_comparison(
+    results: list[dict[str, Any]],
+    output_path: str,
+    title: str = "Latency Comparison: MongoDB vs Cassandra",
+) -> str:
+    """Generate a grouped bar chart showing avg/P95/P99 read latency.
+
+    Args:
+        results: Aggregated results with latency metrics.
+        output_path: Path to save the chart image.
+        title: Chart title.
+
+    Returns:
+        Path to the saved chart file.
+    """
+    fig, axes = plt.subplots(1, 3, figsize=(15, 6))
+    latency_types = [
+        ("read_avg_latency_us_mean", "Avg Latency (us)"),
+        ("read_p95_latency_us_mean", "P95 Latency (us)"),
+        ("read_p99_latency_us_mean", "P99 Latency (us)"),
+    ]
+
+    databases = sorted(set(r["database"] for r in results))
+    workloads = sorted(set(r.get("workload_label", r.get("workload", "")) for r in results))
+    x = np.arange(len(workloads))
+    width = 0.35
+
+    for ax, (metric, ylabel) in zip(axes, latency_types):
+        for i, db in enumerate(databases):
+            db_results = [r for r in results if r["database"] == db]
+            values = []
+            for wl in workloads:
+                matching = [r for r in db_results if r.get("workload_label", r.get("workload", "")) == wl]
+                values.append(matching[0].get(metric, 0) if matching else 0)
+
+            offset = (i - len(databases) / 2 + 0.5) * width
+            ax.bar(x + offset, values, width, label=db.capitalize(),
+                   color=COLORS.get(db, None))
+
+        ax.set_xlabel("Workload")
+        ax.set_ylabel(ylabel)
+        ax.set_xticks(x)
+        ax.set_xticklabels(workloads, rotation=15, ha="right")
+        ax.legend()
+        ax.grid(axis="y", alpha=0.3)
+
+    fig.suptitle(title, fontsize=14)
+    plt.tight_layout()
+    fig.savefig(output_path, dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    logger.info(f"Latency comparison chart saved to {output_path}")
+    return output_path
+
+
+def plot_throughput_vs_concurrency(
+    results: list[dict[str, Any]],
+    output_path: str,
+    title: str = "Throughput vs Concurrency",
+) -> str:
+    """Generate a line chart of throughput vs thread count per database.
+
+    Helps identify the saturation point where throughput plateaus.
+
+    Args:
+        results: Aggregated results with 'threads' and 'throughput_ops_sec_mean'.
+        output_path: Path to save the chart image.
+        title: Chart title.
+
+    Returns:
+        Path to the saved chart file.
+    """
+    fig, ax = plt.subplots(figsize=FIGSIZE)
+
+    databases = sorted(set(r["database"] for r in results))
+
+    for db in databases:
+        db_results = sorted(
+            [r for r in results if r["database"] == db],
+            key=lambda r: r.get("threads", 0),
+        )
+        threads = [r.get("threads", 0) for r in db_results]
+        throughput = [r.get("throughput_ops_sec_mean", 0) for r in db_results]
+        errors = [r.get("throughput_ops_sec_std", 0) for r in db_results]
+
+        ax.errorbar(
+            threads,
+            throughput,
+            yerr=errors,
+            marker="o",
+            label=db.capitalize(),
+            color=COLORS.get(db, None),
+            capsize=3,
+            linewidth=2,
+        )
+
+    ax.set_xlabel("Number of Threads")
+    ax.set_ylabel("Throughput (ops/sec)")
+    ax.set_title(title)
+    ax.legend()
+    ax.grid(alpha=0.3)
+
+    plt.tight_layout()
+    fig.savefig(output_path, dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    logger.info(f"Throughput vs concurrency chart saved to {output_path}")
+    return output_path
+
+
+def plot_latency_vs_concurrency(
+    results: list[dict[str, Any]],
+    output_path: str,
+    title: str = "P99 Latency vs Concurrency",
+) -> str:
+    """Generate a line chart of P99 latency vs thread count per database.
+
+    Args:
+        results: Aggregated results with 'threads' and latency metrics.
+        output_path: Path to save the chart image.
+        title: Chart title.
+
+    Returns:
+        Path to the saved chart file.
+    """
+    fig, ax = plt.subplots(figsize=FIGSIZE)
+
+    databases = sorted(set(r["database"] for r in results))
+
+    for db in databases:
+        db_results = sorted(
+            [r for r in results if r["database"] == db],
+            key=lambda r: r.get("threads", 0),
+        )
+        threads = [r.get("threads", 0) for r in db_results]
+        latency = [r.get("read_p99_latency_us_mean", 0) for r in db_results]
+
+        ax.plot(
+            threads,
+            latency,
+            marker="s",
+            label=db.capitalize(),
+            color=COLORS.get(db, None),
+            linewidth=2,
+        )
+
+    ax.set_xlabel("Number of Threads")
+    ax.set_ylabel("P99 Read Latency (us)")
+    ax.set_title(title)
+    ax.legend()
+    ax.grid(alpha=0.3)
+
+    plt.tight_layout()
+    fig.savefig(output_path, dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    logger.info(f"Latency vs concurrency chart saved to {output_path}")
+    return output_path
+
+
+def plot_resource_utilization(
+    resource_data: list[dict[str, Any]],
+    output_path: str,
+    title: str = "Resource Utilization Over Time",
+) -> str:
+    """Generate time-series charts of CPU, memory, and disk I/O.
+
+    Args:
+        resource_data: List of resource sample dictionaries with timestamps.
+        output_path: Path to save the chart image.
+        title: Chart title.
+
+    Returns:
+        Path to the saved chart file.
+    """
+    if not resource_data:
+        logger.warning("No resource data to plot")
+        return output_path
+
+    fig, axes = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
+
+    # Normalize timestamps to start from 0
+    t0 = resource_data[0].get("timestamp", 0)
+    times = [s.get("timestamp", 0) - t0 for s in resource_data]
+
+    # CPU
+    cpu = [s.get("cpu_percent", 0) for s in resource_data]
+    axes[0].plot(times, cpu, color="#e74c3c", linewidth=1.5)
+    axes[0].set_ylabel("CPU (%)")
+    axes[0].set_title("CPU Utilization")
+    axes[0].grid(alpha=0.3)
+
+    # Memory
+    mem = [s.get("mem_usage_mb", 0) for s in resource_data]
+    axes[1].plot(times, mem, color="#3498db", linewidth=1.5)
+    axes[1].set_ylabel("Memory (MB)")
+    axes[1].set_title("Memory Usage")
+    axes[1].grid(alpha=0.3)
+
+    # Disk I/O
+    blk_read = [s.get("blk_read_mb", 0) for s in resource_data]
+    blk_write = [s.get("blk_write_mb", 0) for s in resource_data]
+    axes[2].plot(times, blk_read, label="Read", color="#2ecc71", linewidth=1.5)
+    axes[2].plot(times, blk_write, label="Write", color="#e67e22", linewidth=1.5)
+    axes[2].set_ylabel("Block I/O (MB)")
+    axes[2].set_xlabel("Time (seconds)")
+    axes[2].set_title("Disk I/O")
+    axes[2].legend()
+    axes[2].grid(alpha=0.3)
+
+    fig.suptitle(title, fontsize=14)
+    plt.tight_layout()
+    fig.savefig(output_path, dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    logger.info(f"Resource utilization chart saved to {output_path}")
+    return output_path
+
+
+def plot_dataset_scaling(
+    results: list[dict[str, Any]],
+    output_path: str,
+    title: str = "Performance vs Dataset Size",
+) -> str:
+    """Generate charts showing throughput and latency vs dataset size.
+
+    Args:
+        results: Aggregated results with 'record_count' field.
+        output_path: Path to save the chart image.
+        title: Chart title.
+
+    Returns:
+        Path to the saved chart file.
+    """
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+    databases = sorted(set(r["database"] for r in results))
+
+    for db in databases:
+        db_results = sorted(
+            [r for r in results if r["database"] == db],
+            key=lambda r: r.get("record_count", 0),
+        )
+        records = [r.get("record_count", 0) for r in db_results]
+        labels = [r.get("dataset_label", str(r.get("record_count", ""))) for r in db_results]
+        throughput = [r.get("throughput_ops_sec_mean", 0) for r in db_results]
+        p99_latency = [r.get("read_p99_latency_us_mean", 0) for r in db_results]
+
+        ax1.plot(
+            range(len(records)), throughput,
+            marker="o", label=db.capitalize(),
+            color=COLORS.get(db, None), linewidth=2,
+        )
+        ax2.plot(
+            range(len(records)), p99_latency,
+            marker="s", label=db.capitalize(),
+            color=COLORS.get(db, None), linewidth=2,
+        )
+
+    ax1.set_xlabel("Dataset Size")
+    ax1.set_ylabel("Throughput (ops/sec)")
+    ax1.set_title("Throughput vs Dataset Size")
+    ax1.legend()
+    ax1.grid(alpha=0.3)
+
+    ax2.set_xlabel("Dataset Size")
+    ax2.set_ylabel("P99 Read Latency (us)")
+    ax2.set_title("P99 Latency vs Dataset Size")
+    ax2.legend()
+    ax2.grid(alpha=0.3)
+
+    # Set x-tick labels (use labels from last db)
+    if databases and db_results:
+        for ax in (ax1, ax2):
+            ax.set_xticks(range(len(records)))
+            ax.set_xticklabels(labels)
+
+    fig.suptitle(title, fontsize=14)
+    plt.tight_layout()
+    fig.savefig(output_path, dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    logger.info(f"Dataset scaling chart saved to {output_path}")
+    return output_path
+
+
+def generate_all_charts(
+    all_results: dict[str, list[dict[str, Any]]],
+    output_dir: str,
+) -> list[str]:
+    """Generate all charts for a complete experiment.
+
+    Args:
+        all_results: Dictionary mapping series names to aggregated results.
+        output_dir: Directory to save chart images.
+
+    Returns:
+        List of paths to generated chart files.
+    """
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    generated = []
+
+    if "workload" in all_results and all_results["workload"]:
+        path = str(output_dir / "throughput_comparison.png")
+        plot_throughput_comparison(all_results["workload"], path)
+        generated.append(path)
+
+        path = str(output_dir / "latency_comparison.png")
+        plot_latency_comparison(all_results["workload"], path)
+        generated.append(path)
+
+    if "concurrency" in all_results and all_results["concurrency"]:
+        path = str(output_dir / "throughput_vs_concurrency.png")
+        plot_throughput_vs_concurrency(all_results["concurrency"], path)
+        generated.append(path)
+
+        path = str(output_dir / "latency_vs_concurrency.png")
+        plot_latency_vs_concurrency(all_results["concurrency"], path)
+        generated.append(path)
+
+    if "stress" in all_results and all_results["stress"]:
+        path = str(output_dir / "stress_throughput.png")
+        plot_throughput_vs_concurrency(
+            all_results["stress"], path, title="Stress Test: Throughput vs Concurrency"
+        )
+        generated.append(path)
+
+        path = str(output_dir / "stress_latency.png")
+        plot_latency_vs_concurrency(
+            all_results["stress"], path, title="Stress Test: P99 Latency vs Concurrency"
+        )
+        generated.append(path)
+
+    if "dataset_size" in all_results and all_results["dataset_size"]:
+        path = str(output_dir / "dataset_scaling.png")
+        plot_dataset_scaling(all_results["dataset_size"], path)
+        generated.append(path)
+
+    logger.info(f"Generated {len(generated)} charts in {output_dir}")
+    return generated
