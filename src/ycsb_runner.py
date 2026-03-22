@@ -201,7 +201,7 @@ class YCSBRunner:
         self,
         binding: str,
         workload_file: str,
-        properties: dict[str, Any] | None = None,
+        properties: Optional[dict[str, Any]] = None,
         timeout: int = 3600,
     ) -> str:
         """Run the YCSB load phase to populate the database.
@@ -224,7 +224,7 @@ class YCSBRunner:
         self,
         binding: str,
         workload_file: str,
-        properties: dict[str, Any] | None = None,
+        properties: Optional[dict[str, Any]] = None,
         timeout: int = 3600,
     ) -> str:
         """Run the YCSB run phase to execute the workload.
@@ -248,7 +248,7 @@ class YCSBRunner:
         phase: str,
         binding: str,
         workload_file: str,
-        properties: dict[str, Any] | None = None,
+        properties: Optional[dict[str, Any]] = None,
     ) -> list[str]:
         """Build the YCSB command line arguments.
 
@@ -292,7 +292,7 @@ class YCSBRunner:
         phase: str,
         binding: str,
         workload_file: str,
-        properties: dict[str, Any] | None,
+        properties: Optional[dict[str, Any]],
         timeout: int,
     ) -> str:
         """Execute a YCSB command and return stdout.

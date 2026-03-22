@@ -178,7 +178,7 @@ class ExperimentRunner:
     def run_series(
         self,
         series_name: str,
-        db_filter: str | None = None,
+        db_filter: Optional[str] = None,
     ) -> list[dict[str, Any]]:
         """Run all configurations in a specific experiment series.
 
@@ -209,7 +209,7 @@ class ExperimentRunner:
 
         return results
 
-    def run_all(self, db_filter: str | None = None) -> dict[str, list[dict[str, Any]]]:
+    def run_all(self, db_filter: Optional[str] = None) -> dict[str, list[dict[str, Any]]]:
         """Run all experiment series.
 
         Args:

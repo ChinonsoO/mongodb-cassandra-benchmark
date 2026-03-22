@@ -1,6 +1,6 @@
 """Statistical metrics computation and aggregation."""
 
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 
@@ -120,7 +120,7 @@ def compute_resource_summary(resource_samples: list[dict[str, Any]]) -> dict[str
 def combine_metrics(
     ycsb_metrics: dict[str, Any],
     resource_summary: dict[str, Any],
-    run_config_info: dict[str, Any] | None = None,
+    run_config_info: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Combine YCSB metrics with resource utilization into a single result dict.
 

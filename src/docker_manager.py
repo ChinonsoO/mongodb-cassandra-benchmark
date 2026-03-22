@@ -26,7 +26,7 @@ class DockerManager:
     def __init__(
         self,
         compose_file: str = "docker-compose.yml",
-        project_dir: str | None = None,
+        project_dir: Optional[str] = None,
     ):
         """Initialize DockerManager.
 
