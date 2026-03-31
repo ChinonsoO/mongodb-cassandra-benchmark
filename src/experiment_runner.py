@@ -15,6 +15,7 @@ from typing import Any, Optional
 from src.config import ExperimentConfig, RunConfig, load_experiment_config
 from src.db_setup import reset_database, setup_database
 from src.docker_manager import DockerManager
+from src.environment import collect_environment_snapshot
 from src.metrics import aggregate_runs, combine_metrics, compute_resource_summary
 from src.resource_monitor import ResourceMonitor
 from src.ycsb_parser import extract_summary, parse_ycsb_output
@@ -87,6 +88,11 @@ class ExperimentRunner:
             "series": run_config.series_name,
             "dataset_label": run_config.dataset_label,
             "repetition": run_config.repetition,
+            "environment": collect_environment_snapshot(
+                docker_manager=self.docker_manager,
+                ycsb_runner=self.ycsb_runner,
+                container_name=db.container_name,
+            ),
         }
 
         try:
@@ -288,16 +294,10 @@ class ExperimentRunner:
             run_id: Unique run identifier for the filename.
             result: Result dictionary to save.
         """
-        # Remove non-serializable data
-        serializable = {
-            k: v for k, v in result.items()
-            if k != "resource_samples"  # Samples saved separately if needed
-        }
-
         output_path = self.results_dir / "raw" / f"{run_id}.json"
         try:
             with open(output_path, "w") as f:
-                json.dump(serializable, f, indent=2, default=str)
+                json.dump(result, f, indent=2, default=str)
             logger.debug(f"Raw result saved to {output_path}")
         except Exception as e:
             logger.warning(f"Failed to save raw result: {e}")

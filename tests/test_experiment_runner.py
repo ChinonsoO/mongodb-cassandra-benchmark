@@ -210,6 +210,8 @@ class TestRunSingle:
         with open(os.path.join(raw_dir, files[0])) as f:
             saved = json.load(f)
         assert saved["database"] == "mongodb"
+        assert "environment" in saved
+        assert "resource_samples" in saved
 
 
 class TestRunSeries:

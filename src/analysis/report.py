@@ -14,6 +14,80 @@ from tabulate import tabulate
 logger = logging.getLogger(__name__)
 
 
+PRIMARY_OPERATION_HINTS = (
+    ("insert", ("bulk", "insert")),
+    ("rmw", ("read-modify-write", "workload_f", "rmw")),
+    ("update", ("update", "workload_a", "stress")),
+    ("read", ("read", "workload_b")),
+)
+
+
+def _metric_value(row: dict[str, Any], key: str) -> float:
+    """Read a metric from aggregated or raw result rows."""
+    return float(row.get(f"{key}_mean", row.get(key, 0)) or 0)
+
+
+def _select_primary_operation(row: dict[str, Any]) -> str:
+    """Choose the most representative operation for summary reporting."""
+    text = " ".join([
+        str(row.get("workload_label", "")),
+        str(row.get("workload", "")),
+    ]).lower()
+
+    for op, hints in PRIMARY_OPERATION_HINTS:
+        if any(hint in text for hint in hints):
+            if any(
+                _metric_value(row, f"{op}_{metric}") > 0
+                for metric in ("ops", "avg_latency_us", "p95_latency_us", "p99_latency_us")
+            ):
+                return op
+
+    ordered_ops = ("update", "read", "rmw", "insert")
+    best_op = "read"
+    best_score = (-1.0, -1.0, float("-inf"))
+    for priority, op in enumerate(ordered_ops):
+        score = (
+            _metric_value(row, f"{op}_ops"),
+            1.0 if any(
+                _metric_value(row, f"{op}_{metric}") > 0
+                for metric in ("avg_latency_us", "p95_latency_us", "p99_latency_us")
+            ) else 0.0,
+            -priority,
+        )
+        if score > best_score:
+            best_op = op
+            best_score = score
+    return best_op
+
+
+def _primary_latency_summary(row: dict[str, Any]) -> dict[str, Any]:
+    """Return the primary operation label and latency metrics for a result row."""
+    labels = {
+        "read": "Read",
+        "update": "Update",
+        "insert": "Insert",
+        "rmw": "RMW",
+    }
+    op = _select_primary_operation(row)
+    summary = {
+        "op": op,
+        "label": labels[op],
+        "avg": _metric_value(row, f"{op}_avg_latency_us"),
+        "p95": _metric_value(row, f"{op}_p95_latency_us"),
+        "p99": _metric_value(row, f"{op}_p99_latency_us"),
+    }
+
+    if summary["avg"] == 0 and summary["p95"] == 0 and summary["p99"] == 0 and op != "read":
+        return {
+            "op": "read",
+            "label": labels["read"],
+            "avg": _metric_value(row, "read_avg_latency_us"),
+            "p95": _metric_value(row, "read_p95_latency_us"),
+            "p99": _metric_value(row, "read_p99_latency_us"),
+        }
+    return summary
+
+
 def generate_summary_table(
     results: list[dict[str, Any]],
     title: str = "Benchmark Summary",
@@ -37,26 +111,29 @@ def generate_summary_table(
         "Threads",
         "Dataset",
         "Throughput\n(ops/sec)",
-        "Read Avg\n(us)",
-        "Read P95\n(us)",
-        "Read P99\n(us)",
+        "Latency\nFocus",
+        "Avg\n(us)",
+        "P95\n(us)",
+        "P99\n(us)",
         "Avg CPU\n(%)",
         "Peak Mem\n(MB)",
     ]
 
     rows = []
     for r in results:
+        latency = _primary_latency_summary(r)
         rows.append([
             r.get("database", ""),
             r.get("workload_label", r.get("workload", "")),
             r.get("threads", ""),
             r.get("dataset_label", ""),
-            _fmt_num(r.get("throughput_ops_sec_mean", 0)),
-            _fmt_num(r.get("read_avg_latency_us_mean", 0)),
-            _fmt_num(r.get("read_p95_latency_us_mean", 0)),
-            _fmt_num(r.get("read_p99_latency_us_mean", 0)),
-            _fmt_num(r.get("avg_cpu_percent_mean", r.get("avg_cpu_percent", 0))),
-            _fmt_num(r.get("max_mem_usage_mb_mean", r.get("max_mem_usage_mb", 0))),
+            _fmt_num(_metric_value(r, "throughput_ops_sec")),
+            latency["label"],
+            _fmt_num(latency["avg"]),
+            _fmt_num(latency["p95"]),
+            _fmt_num(latency["p99"]),
+            _fmt_num(_metric_value(r, "avg_cpu_percent")),
+            _fmt_num(_metric_value(r, "max_mem_usage_mb")),
         ])
 
     table = tabulate(rows, headers=headers, tablefmt="grid", floatfmt=".2f")
@@ -194,9 +271,108 @@ def identify_saturation_point(
     }
 
 
+def _find_environment_snapshot(
+    raw_results: dict[str, list[dict[str, Any]]] | None,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Extract a representative environment snapshot plus container entries."""
+    if not raw_results:
+        return {}, []
+
+    first_environment: dict[str, Any] = {}
+    containers: dict[str, dict[str, Any]] = {}
+
+    for series_results in raw_results.values():
+        for result in series_results:
+            environment = result.get("environment", {})
+            if not isinstance(environment, dict):
+                continue
+
+            if not first_environment:
+                first_environment = environment
+
+            container = environment.get("target_container", {})
+            if not isinstance(container, dict):
+                continue
+            name = container.get("name")
+            if name and name not in containers:
+                containers[name] = container
+
+    return first_environment, list(containers.values())
+
+
+def _build_environment_summary(
+    raw_results: dict[str, list[dict[str, Any]]] | None,
+) -> list[str]:
+    """Build a text summary of the benchmark execution environment."""
+    environment, containers = _find_environment_snapshot(raw_results)
+    if not environment:
+        return []
+
+    lines = ["", "Environment Summary:"]
+
+    host = environment.get("host", {})
+    if isinstance(host, dict):
+        host_bits = [
+            host.get("hostname"),
+            host.get("platform"),
+            host.get("platform_release"),
+            host.get("machine"),
+        ]
+        host_bits = [str(v) for v in host_bits if v]
+        if host.get("logical_cpus") is not None:
+            host_bits.append(f"{host['logical_cpus']} logical CPUs")
+        if host_bits:
+            lines.append(f"  Host: {', '.join(host_bits)}")
+
+    runtime = environment.get("runtime", {})
+    if isinstance(runtime, dict):
+        runtime_bits = []
+        if runtime.get("python_version"):
+            runtime_bits.append(f"Python {runtime['python_version']}")
+        if runtime.get("java_version"):
+            runtime_bits.append(runtime["java_version"])
+        elif runtime.get("java_executable"):
+            runtime_bits.append(f"Java via {runtime['java_executable']}")
+        if runtime.get("ycsb_path"):
+            runtime_bits.append(f"YCSB {runtime['ycsb_path']}")
+        if runtime_bits:
+            lines.append(f"  Runtime: {', '.join(str(v) for v in runtime_bits)}")
+
+    docker = environment.get("docker", {})
+    if isinstance(docker, dict) and docker:
+        docker_bits = []
+        if docker.get("server_version"):
+            docker_bits.append(f"Docker {docker['server_version']}")
+        if docker.get("operating_system"):
+            docker_bits.append(str(docker["operating_system"]))
+        if docker.get("engine_cpus") is not None:
+            docker_bits.append(f"{docker['engine_cpus']} engine CPUs")
+        if docker.get("engine_memory_mb") is not None:
+            docker_bits.append(f"{docker['engine_memory_mb']:.0f} MB engine memory")
+        if docker_bits:
+            lines.append(f"  Docker: {', '.join(docker_bits)}")
+
+    if containers:
+        for container in containers:
+            container_bits = []
+            if container.get("image"):
+                container_bits.append(str(container["image"]))
+            if container.get("cpus") is not None:
+                container_bits.append(f"{container['cpus']} CPU quota")
+            if container.get("cpuset_cpus"):
+                container_bits.append(f"cpuset {container['cpuset_cpus']}")
+            if container.get("memory_limit_mb") is not None:
+                container_bits.append(f"{container['memory_limit_mb']:.0f} MB memory")
+            label = container.get("name", "container")
+            lines.append(f"  Container {label}: {', '.join(container_bits)}")
+
+    return lines
+
+
 def generate_report(
     all_results: dict[str, list[dict[str, Any]]],
     output_dir: str,
+    raw_results: dict[str, list[dict[str, Any]]] | None = None,
 ) -> str:
     """Generate a complete benchmark report with tables and CSV exports.
 
@@ -213,6 +389,7 @@ def generate_report(
     report_lines = ["\n" + "=" * 60]
     report_lines.append("  BENCHMARK RESULTS SUMMARY")
     report_lines.append("=" * 60)
+    report_lines.extend(_build_environment_summary(raw_results))
 
     # Generate table for each series
     for series_name, results in all_results.items():

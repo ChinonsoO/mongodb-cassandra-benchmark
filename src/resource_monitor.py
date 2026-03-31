@@ -101,10 +101,19 @@ class ResourceMonitor:
             logger.error(f"Could not find container '{self.container_name}': {e}")
             return
 
+        container_attrs = getattr(container, "attrs", {})
+        if not isinstance(container_attrs, dict):
+            try:
+                container.reload()
+                container_attrs = getattr(container, "attrs", {})
+            except Exception:
+                container_attrs = {}
+
         while not self._stop_event.is_set():
             try:
                 stats = container.stats(stream=False)
-                sample = self._parse_stats(stats)
+                cpu_budget = _calculate_cpu_budget(stats, container_attrs)
+                sample = self._parse_stats(stats, cpu_budget=cpu_budget)
                 self._samples.append(sample)
             except Exception as e:
                 logger.warning(f"Failed to collect stats: {e}")
@@ -112,20 +121,27 @@ class ResourceMonitor:
             self._stop_event.wait(self.interval)
 
     @staticmethod
-    def _parse_stats(stats: dict[str, Any]) -> dict[str, Any]:
+    def _parse_stats(
+        stats: dict[str, Any],
+        cpu_budget: float | None = None,
+    ) -> dict[str, Any]:
         """Parse raw Docker stats into a structured sample.
 
         Args:
             stats: Raw Docker stats dictionary from container.stats().
+            cpu_budget: Effective CPU budget for the container. When omitted,
+                falls back to Docker's visible CPU count.
 
         Returns:
             Parsed sample with cpu_percent, mem_usage_mb, etc.
         """
         sample: dict[str, Any] = {"timestamp": time.time()}
 
-        # CPU calculation
+        # Normalize Docker's multi-core CPU percentage against the
+        # container's allowed CPU budget rather than host-visible CPUs.
         cpu_percent = _calculate_cpu_percent(stats)
-        sample["cpu_percent"] = cpu_percent
+        effective_budget = cpu_budget or _calculate_cpu_budget(stats)
+        sample["cpu_percent"] = cpu_percent / effective_budget
 
         # Memory
         mem_stats = stats.get("memory_stats", {})
@@ -173,6 +189,69 @@ def _calculate_cpu_percent(stats: dict[str, Any]) -> float:
     if system_delta > 0 and cpu_delta >= 0:
         return (cpu_delta / system_delta) * num_cpus * 100.0
     return 0.0
+
+
+def _calculate_cpu_budget(
+    stats: dict[str, Any],
+    container_attrs: dict[str, Any] | None = None,
+) -> float:
+    """Determine the effective CPU budget available to a container.
+
+    Prefers explicit runtime limits from Docker container config. Falls back
+    to Docker's reported online CPU count when no quota/pinning is set.
+    """
+    candidates: list[float] = []
+
+    if isinstance(container_attrs, dict):
+        host_config = container_attrs.get("HostConfig", {})
+        if isinstance(host_config, dict):
+            nano_cpus = host_config.get("NanoCpus", 0) or 0
+            if nano_cpus > 0:
+                candidates.append(float(nano_cpus) / 1_000_000_000)
+
+            cpu_quota = host_config.get("CpuQuota", 0) or 0
+            cpu_period = host_config.get("CpuPeriod", 0) or 0
+            if cpu_quota > 0 and cpu_period > 0:
+                candidates.append(float(cpu_quota) / float(cpu_period))
+
+            cpuset_cpus = _count_cpuset_cpus(host_config.get("CpusetCpus", ""))
+            if cpuset_cpus > 0:
+                candidates.append(float(cpuset_cpus))
+
+    online_cpus = stats.get("cpu_stats", {}).get("online_cpus", 1) or 1
+    if online_cpus > 0:
+        candidates.append(float(online_cpus))
+
+    positive = [c for c in candidates if c > 0]
+    return min(positive) if positive else 1.0
+
+
+def _count_cpuset_cpus(cpuset: str) -> int:
+    """Count CPUs described by a cpuset string like '0-1,4,6-7'."""
+    if not cpuset:
+        return 0
+
+    total = 0
+    for part in cpuset.split(","):
+        token = part.strip()
+        if not token:
+            continue
+        if "-" in token:
+            start_text, end_text = token.split("-", 1)
+            try:
+                start = int(start_text)
+                end = int(end_text)
+            except ValueError:
+                continue
+            if end >= start:
+                total += end - start + 1
+        else:
+            try:
+                int(token)
+            except ValueError:
+                continue
+            total += 1
+    return total
 
 
 def _calculate_blkio(stats: dict[str, Any]) -> tuple[int, int]:

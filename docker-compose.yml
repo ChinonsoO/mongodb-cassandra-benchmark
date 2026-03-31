@@ -4,6 +4,9 @@ services:
   mongodb:
     image: mongo:7.0
     container_name: ycsb-mongodb
+    cpus: 2.0
+    cpuset: "0-1"
+    mem_limit: 2g
     ports:
       - "27017:27017"
     volumes:
@@ -17,6 +20,9 @@ services:
   cassandra:
     image: cassandra:4.1
     container_name: ycsb-cassandra
+    cpus: 2.0
+    cpuset: "0-1"
+    mem_limit: 2g
     ports:
       - "9042:9042"
     volumes:

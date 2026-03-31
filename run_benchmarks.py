@@ -179,6 +179,7 @@ def main() -> int:
     )
 
     all_results = {}
+    all_raw_results = {}
     analysis_dir = str(Path(args.results_dir) / "analysis")
     start_time = time.time()
 
@@ -188,21 +189,23 @@ def main() -> int:
             logger.info(f"  Starting series: {series_name}")
             logger.info(f"{'='*40}")
             results = runner.run_series(series_name, db_filter)
+            all_raw_results[series_name] = results
             aggregated = runner.aggregate_series_results(results)
             all_results[series_name] = aggregated
         except Exception as e:
             logger.error(f"Series '{series_name}' failed: {e}")
+            all_raw_results[series_name] = []
             all_results[series_name] = []
 
         # Save analysis incrementally after each series so partial
         # results survive if a later series crashes.
         if not args.skip_analysis and all_results.get(series_name):
             try:
-                generate_all_charts(all_results, analysis_dir)
+                generate_all_charts(all_results, analysis_dir, raw_results=all_raw_results)
             except Exception as e:
                 logger.warning(f"Chart generation failed after {series_name}: {e}")
             try:
-                generate_report(all_results, analysis_dir)
+                generate_report(all_results, analysis_dir, raw_results=all_raw_results)
             except Exception as e:
                 logger.warning(f"Report generation failed after {series_name}: {e}")
 
@@ -213,12 +216,12 @@ def main() -> int:
     if not args.skip_analysis and any(all_results.values()):
         logger.info("\nGenerating final analysis...")
         try:
-            generate_all_charts(all_results, analysis_dir)
+            generate_all_charts(all_results, analysis_dir, raw_results=all_raw_results)
         except Exception as e:
             logger.warning(f"Chart generation failed: {e}")
 
         try:
-            report = generate_report(all_results, analysis_dir)
+            report = generate_report(all_results, analysis_dir, raw_results=all_raw_results)
             print(report)
         except Exception as e:
             logger.warning(f"Report generation failed: {e}")
