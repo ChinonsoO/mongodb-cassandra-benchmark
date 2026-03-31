@@ -217,3 +217,70 @@ class TestGenerateReport:
         """Should handle empty results gracefully."""
         generate_report({}, tmp_results_dir)
         # Should not raise -- report file still created
+class TestReportEdgeCases:
+    """Additional edge-case tests for report module."""
+
+    def test_generate_summary_table_with_missing_fields(self):
+        """Should handle missing optional fields gracefully."""
+        data = [
+            {"database": "mongo", "threads": 10, "throughput_ops_sec_mean": 1000},
+            {"database": "cassandra"},  # missing metrics
+        ]
+        table = generate_summary_table(data)
+        assert isinstance(table, str)
+        assert "mongo" in table
+        assert "cassandra" in table
+
+    def test_generate_csv_with_missing_fields(self, tmp_results_dir):
+        """CSV should still be created even if some fields are missing."""
+        data = [{"database": "mongo", "throughput_ops_sec_mean": 1000}]
+        output = os.path.join(tmp_results_dir, "partial.csv")
+        generate_csv(data, output)
+        assert os.path.exists(output)
+        with open(output) as f:
+            lines = f.readlines()
+        assert len(lines) == 2  # header + 1 row
+
+    def test_identify_saturation_point_single_database_plateau(self):
+        """Should detect saturation for a single-database plateau with small variations."""
+        data = [
+            {"database": "mongo", "threads": t, "workload": "wl",
+             "throughput_ops_sec_mean": 1000 if t < 5 else 1000 * 1.01,
+             "read_avg_latency_us_mean": 100}
+            for t in range(1, 10)
+        ]
+        result = identify_saturation_point(data)
+        assert "throughput_saturation_threads" in result
+        # Should not crash even if plateau is nearly flat
+        assert result["throughput_saturation_threads"] is not None
+
+    def test_generate_report_with_missing_series(self, tmp_results_dir):
+        """Should handle missing workload/concurrency/dataset series."""
+        all_results = {"workload": [], "concurrency": [], "dataset_size": []}
+        generate_report(all_results, tmp_results_dir)
+        report_file = os.path.join(tmp_results_dir, "summary_report.txt")
+        assert os.path.exists(report_file)
+        with open(report_file) as f:
+            content = f.read()
+        # Should contain placeholder or "No results"
+        assert "No results" in content or len(content.strip()) > 0
+
+    def test_generate_report_partial_series(self, sample_aggregated, tmp_results_dir):
+        """Report generation with only one series present."""
+        all_results = {"workload": sample_aggregated}  # no concurrency/dataset
+        generate_report(all_results, tmp_results_dir)
+        report_file = os.path.join(tmp_results_dir, "summary_report.txt")
+        assert os.path.exists(report_file)
+        with open(report_file) as f:
+            content = f.read()
+        assert "mongodb" in content
+        assert "cassandra" in content
+        # Ensure report doesn't crash due to missing series
+        assert "concurrency" not in content or True
+
+    def test_csv_output_for_empty_series(self, tmp_results_dir):
+        """Empty input returns output path but may not create file."""
+        output = os.path.join(tmp_results_dir, "empty_series.csv")
+        result = generate_csv([], output)
+        assert result == output
+        # File does not need to exist

@@ -71,6 +71,38 @@ class TestAggregateRuns:
         ]
         agg = aggregate_runs(results)
         assert abs(agg["ops_mean"] - 110.0) < 0.01
+    
+    def test_mixed_numeric_types(self):
+        """Mix of ints and floats should work correctly."""
+        results = [
+            {"throughput": 1000, "latency": 500.0},
+            {"throughput": 1200.5, "latency": 600},
+        ]
+        agg = aggregate_runs(results)
+        assert abs(agg["throughput_mean"] - 1100.25) < 0.01
+        assert abs(agg["latency_mean"] - 550.0) < 0.01
+
+    def test_missing_values_skipped(self):
+        """Missing keys should be ignored in aggregation."""
+        results = [
+            {"throughput": 1000.0},
+            {"latency": 500.0},
+        ]
+        agg = aggregate_runs(results)
+        # Each metric aggregated separately
+        assert "throughput_mean" in agg and agg["throughput_mean"] == 1000.0
+        assert "latency_mean" in agg and agg["latency_mean"] == 500.0
+
+    def test_non_numeric_ignored_for_stats(self):
+        """Non-numeric values should not break mean/std calculation."""
+        results = [
+            {"throughput": 1000, "status": "ok"},
+            {"throughput": 1200, "status": "ok"},
+        ]
+        agg = aggregate_runs(results)
+        assert abs(agg["throughput_mean"] - 1100.0) < 0.01
+        assert agg["status"] == "ok"
+
 
 
 class TestComputeResourceSummary:
@@ -114,6 +146,33 @@ class TestComputeResourceSummary:
         summary = compute_resource_summary(samples)
         assert summary["avg_cpu_percent"] == 50.0
         assert summary["max_cpu_percent"] == 50.0
+    
+    def test_partial_fields_missing(self):
+        """Missing resource fields should default to zero."""
+        samples = [
+            {"cpu_percent": 50.0},  # missing memory, blk, net
+            {"mem_usage_mb": 100.0},  # missing cpu
+        ]
+        summary = compute_resource_summary(samples)
+        assert summary["avg_cpu_percent"] == 25.0  # 50/2
+        assert summary["avg_mem_usage_mb"] == 50.0  # 100/2
+        assert summary["total_blk_read_mb"] == 0.0
+        assert summary["total_blk_write_mb"] == 0.0
+
+    def test_identical_samples(self):
+        """Multiple identical samples should return correct summary."""
+        samples = [
+            {"cpu_percent": 20.0, "mem_usage_mb": 200.0,
+             "blk_read_mb": 10.0, "blk_write_mb": 5.0,
+             "net_rx_mb": 1.0, "net_tx_mb": 0.5},
+            {"cpu_percent": 20.0, "mem_usage_mb": 200.0,
+             "blk_read_mb": 10.0, "blk_write_mb": 5.0,
+             "net_rx_mb": 1.0, "net_tx_mb": 0.5},
+        ]
+        summary = compute_resource_summary(samples)
+        assert summary["avg_cpu_percent"] == 20.0
+        assert summary["total_blk_read_mb"] == 0.0  # because last-first = 0
+        assert summary["total_blk_write_mb"] == 0.0
 
 
 class TestCombineMetrics:
@@ -163,6 +222,17 @@ class TestFormatLatencyUs:
     def test_zero(self):
         """Zero should be formatted as microseconds."""
         assert format_latency_us(0) == "0 us"
+    
+    def test_boundary_values(self):
+        """Check boundaries between us/ms/s formatting."""
+        assert format_latency_us(999) == "999 us"
+        assert format_latency_us(1000) == "1.00 ms"
+        assert format_latency_us(999_999) == "1000.00 ms"
+        assert format_latency_us(1_000_000) == "1.00 s"
+
+    def test_large_values(self):
+        """Very large latency values in seconds."""
+        assert format_latency_us(10_000_000) == "10.00 s"
 
 
 class TestFormatThroughput:
@@ -183,3 +253,18 @@ class TestFormatThroughput:
     def test_negative(self):
         """Negative values should return N/A."""
         assert format_throughput(-1) == "N/A"
+    
+    def test_zero_throughput(self):
+        """Zero should be formatted as 0 ops/s."""
+        assert format_throughput(0) == "0.0 ops/s"
+
+    def test_boundary_millions(self):
+        """Check formatting at 1M threshold."""
+        assert format_throughput(999_999) == "999,999 ops/s"
+        assert format_throughput(1_000_000) == "1.00M ops/s"
+
+    def test_large_millions(self):
+        """Very large throughput values."""
+        assert format_throughput(123_456_789) == "123.46M ops/s"
+
+
