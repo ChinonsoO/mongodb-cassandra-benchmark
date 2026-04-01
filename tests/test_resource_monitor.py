@@ -8,8 +8,10 @@ import pytest
 
 from src.resource_monitor import (
     ResourceMonitor,
+    _calculate_cpu_budget,
     _calculate_cpu_percent,
     _calculate_blkio,
+    _count_cpuset_cpus,
     _calculate_network,
 )
 
@@ -51,6 +53,32 @@ class TestCalculateCpuPercent:
         """Should return 0% when fields are missing."""
         stats = {"cpu_stats": {}, "precpu_stats": {}}
         assert _calculate_cpu_percent(stats) == 0.0
+
+
+class TestCalculateCpuBudget:
+    """Tests for CPU budget normalization."""
+
+    def test_uses_nano_cpus_when_available(self, sample_docker_stats):
+        attrs = {"HostConfig": {"NanoCpus": 2_000_000_000}}
+        assert _calculate_cpu_budget(sample_docker_stats, attrs) == 2.0
+
+    def test_uses_cpuset_when_smaller_than_online_cpu_count(self, sample_docker_stats):
+        attrs = {"HostConfig": {"CpusetCpus": "0-1"}}
+        assert _calculate_cpu_budget(sample_docker_stats, attrs) == 2.0
+
+    def test_falls_back_to_online_cpu_count(self, sample_docker_stats):
+        assert _calculate_cpu_budget(sample_docker_stats) == 4.0
+
+
+class TestCountCpusetCpus:
+    """Tests for cpuset parsing."""
+
+    def test_counts_ranges_and_single_values(self):
+        assert _count_cpuset_cpus("0-1,4,6-7") == 5
+
+    def test_handles_empty_or_invalid_values(self):
+        assert _count_cpuset_cpus("") == 0
+        assert _count_cpuset_cpus("bad") == 0
 
 
 class TestCalculateBlkio:
@@ -106,7 +134,7 @@ class TestResourceMonitorParseStats:
         sample = ResourceMonitor._parse_stats(sample_docker_stats)
 
         assert "timestamp" in sample
-        assert abs(sample["cpu_percent"] - 40.0) < 0.01
+        assert abs(sample["cpu_percent"] - 10.0) < 0.01
         assert abs(sample["mem_usage_mb"] - 256.0) < 0.01
         assert abs(sample["mem_limit_mb"] - 2048.0) < 0.01
         assert abs(sample["mem_percent"] - 12.5) < 0.01
@@ -114,6 +142,13 @@ class TestResourceMonitorParseStats:
         assert abs(sample["blk_write_mb"] - 30.0) < 0.01
         assert abs(sample["net_rx_mb"] - 5.0) < 0.01
         assert abs(sample["net_tx_mb"] - 2.0) < 0.01
+
+    def test_parse_docker_stats_normalizes_to_container_cpu_budget(
+        self, sample_docker_stats
+    ):
+        """Should normalize CPU percent against the allowed CPU budget."""
+        sample = ResourceMonitor._parse_stats(sample_docker_stats, cpu_budget=2.0)
+        assert abs(sample["cpu_percent"] - 20.0) < 0.01
 
 
 class TestResourceMonitorLifecycle:

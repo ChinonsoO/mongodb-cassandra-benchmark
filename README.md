@@ -13,10 +13,10 @@ A benchmarking suite that compares **MongoDB 7.0** and **Cassandra 4.1** under c
 
 ## What This Project Does
 
-1. **Spins up** MongoDB and Cassandra in Docker containers with controlled resource limits.
+1. **Spins up** MongoDB and Cassandra in Docker containers with fixed CPU quotas/pinning and memory limits.
 2. **Loads** data into each database using YCSB (a standard NoSQL benchmarking tool).
 3. **Runs** configurable experiment series — varying workloads, thread counts, and dataset sizes.
-4. **Monitors** container-level resource usage (CPU %, memory, block I/O, network) in a background thread while each benchmark runs.
+4. **Monitors** container-level resource usage (normalized CPU %, memory, block I/O, network) in a background thread while each benchmark runs.
 5. **Parses** YCSB output to extract throughput and latency metrics.
 6. **Aggregates** results across multiple repetitions (mean ± std dev).
 7. **Generates** comparison charts (bar charts, line graphs, time-series) and summary reports (text tables, CSV files).
@@ -113,10 +113,10 @@ docker compose up -d
 
 This launches two containers:
 
-| Container | Image | Port | Memory Limit |
-|-----------|-------|------|-------------|
-| `ycsb-mongodb` | `mongo:7.0` | 27017 | 2 GB |
-| `ycsb-cassandra` | `cassandra:4.1` | 9042 | 2 GB |
+| Container | Image | Port | CPU Limit | CPU Pinning | Memory Limit |
+|-----------|-------|------|-----------|-------------|-------------|
+| `ycsb-mongodb` | `mongo:7.0` | 27017 | 2.0 CPUs | `0-1` | 2 GB |
+| `ycsb-cassandra` | `cassandra:4.1` | 9042 | 2.0 CPUs | `0-1` | 2 GB |
 
 Verify they are running:
 ```bash
@@ -254,7 +254,7 @@ results/
 │   ├── cassandra_workload_a_t10_r1000000_rep1.json
 │   └── ...
 └── analysis/                     # Aggregated analysis outputs
-    ├── summary_report.txt        # Text summary table
+    ├── summary_report.txt        # Text summary table + environment summary
     ├── all_results.csv           # Combined CSV of all results
     ├── workload_results.csv      # Per-series CSV
     ├── concurrency_results.csv
@@ -275,7 +275,7 @@ results/
 | `read_p95_latency_us` | μs | 95th percentile read latency |
 | `read_p99_latency_us` | μs | 99th percentile read latency |
 | `update_avg_latency_us` | μs | Average update latency |
-| `avg_cpu_percent` | % | Average CPU utilization during run |
+| `avg_cpu_percent` | % | Average CPU utilization during run, normalized to the container's allowed CPU budget|
 | `max_mem_usage_mb` | MB | Peak memory usage |
 | `total_blk_read_mb` | MB | Total disk reads |
 | `total_net_rx_mb` | MB | Total network received |
@@ -412,7 +412,7 @@ The benchmark pipeline for each individual run follows this sequence:
 6. Run workload (YCSB)  →  Execute the actual benchmark
 7. Stop resource monitor →  Collect all resource samples
 8. Parse YCSB output    →  Extract throughput & latency metrics
-9. Save raw results     →  Write JSON to results/raw/
+9. Save raw results     →  Write JSON to results/raw/ with environment metadata
 ```
 
 After all runs in a series complete:

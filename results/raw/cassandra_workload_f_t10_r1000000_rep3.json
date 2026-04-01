@@ -9,6 +9,7 @@
   "series": "workload",
   "dataset_label": "1 GB",
   "repetition": 3,
+<<<<<<< HEAD
   "load_duration_sec": 126.17271018028259,
   "throughput_ops_sec": 5356.760231412042,
   "runtime_ms": 18668.0,
@@ -24,10 +25,62 @@
   "update_max_latency_us": 21951.0,
   "update_p95_latency_us": 1726.0,
   "update_p99_latency_us": 2233.0,
+=======
+  "environment": {
+    "captured_at_utc": "2026-03-31T17:43:54.061193+00:00",
+    "host": {
+      "hostname": "LAPTOP-EI5GQGDL",
+      "platform": "Windows",
+      "platform_release": "11",
+      "platform_version": "10.0.26200",
+      "machine": "AMD64",
+      "processor": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD",
+      "logical_cpus": 16
+    },
+    "runtime": {
+      "python_version": "3.12.2",
+      "python_executable": "C:\\Users\\User\\Documents\\School\\Fourth Year\\Winter Sem\\SENG 533 Software Performance Evaluation\\Final project\\mongodb-cassandra-benchmark\\venv\\Scripts\\python.exe",
+      "java_executable": "C:\\Users\\User\\AppData\\Local\\Programs\\Eclipse Adoptium\\jdk-17.0.5.8-hotspot\\bin\\java.exe",
+      "java_version": "openjdk version \"17.0.5\" 2022-10-18",
+      "ycsb_path": "C:\\Users\\User\\Documents\\School\\Fourth Year\\Winter Sem\\SENG 533 Software Performance Evaluation\\Final project\\mongodb-cassandra-benchmark\\ycsb-0.17.0"
+    },
+    "docker": {
+      "server_version": "25.0.2",
+      "operating_system": "Docker Desktop",
+      "architecture": "x86_64",
+      "engine_cpus": 16,
+      "engine_memory_mb": 11960.18,
+      "driver": "overlay2"
+    },
+    "target_container": {
+      "name": "ycsb-cassandra",
+      "image": "cassandra:4.1",
+      "cpus": 2.0,
+      "cpuset_cpus": "0-1",
+      "memory_limit_mb": 2048.0
+    }
+  },
+  "load_duration_sec": 118.04490852355957,
+  "throughput_ops_sec": 4681.428772061233,
+  "runtime_ms": 21361.0,
+  "read_ops": 100000.0,
+  "read_avg_latency_us": 1247.24174,
+  "read_min_latency_us": 536.0,
+  "read_max_latency_us": 25567.0,
+  "read_p95_latency_us": 1983.0,
+  "read_p99_latency_us": 3009.0,
+  "update_ops": 49891.0,
+  "update_avg_latency_us": 1193.1249924836143,
+  "update_min_latency_us": 519.0,
+  "update_max_latency_us": 25727.0,
+  "update_p95_latency_us": 1876.0,
+  "update_p99_latency_us": 2743.0,
+>>>>>>> origin/main
   "insert_ops": 0.0,
   "insert_avg_latency_us": 0.0,
   "insert_p95_latency_us": 0.0,
   "insert_p99_latency_us": 0.0,
+<<<<<<< HEAD
   "rmw_ops": 50154.0,
   "rmw_avg_latency_us": 2113.518223870479,
   "rmw_p95_latency_us": 3105.0,
@@ -47,5 +100,149 @@
   "total_net_tx_mb": 106.54113101959229,
   "run_duration_sec": 18.79245114326477,
   "raw_ycsb_output": "[OVERALL], RunTime(ms), 18668\n[OVERALL], Throughput(ops/sec), 5356.760231412042\n[TOTAL_GCS_G1_Young_Generation], Count, 8\n[TOTAL_GC_TIME_G1_Young_Generation], Time(ms), 36\n[TOTAL_GC_TIME_%_G1_Young_Generation], Time(%), 0.19284336833083351\n[TOTAL_GCS_G1_Concurrent_GC], Count, 0\n[TOTAL_GC_TIME_G1_Concurrent_GC], Time(ms), 0\n[TOTAL_GC_TIME_%_G1_Concurrent_GC], Time(%), 0.0\n[TOTAL_GCS_G1_Old_Generation], Count, 0\n[TOTAL_GC_TIME_G1_Old_Generation], Time(ms), 0\n[TOTAL_GC_TIME_%_G1_Old_Generation], Time(%), 0.0\n[TOTAL_GCs], Count, 8\n[TOTAL_GC_TIME], Time(ms), 36\n[TOTAL_GC_TIME_%], Time(%), 0.19284336833083351\n[READ], Operations, 100000\n[READ], AverageLatency(us), 1101.61176\n[READ], MinLatency(us), 238\n[READ], MaxLatency(us), 30031\n[READ], 95thPercentileLatency(us), 1919\n[READ], 99thPercentileLatency(us), 2543\n[READ], Return=OK, 100000\n[READ-MODIFY-WRITE], Operations, 50154\n[READ-MODIFY-WRITE], AverageLatency(us), 2113.518223870479\n[READ-MODIFY-WRITE], MinLatency(us), 583\n[READ-MODIFY-WRITE], MaxLatency(us), 27807\n[READ-MODIFY-WRITE], 95thPercentileLatency(us), 3105\n[READ-MODIFY-WRITE], 99thPercentileLatency(us), 4271\n[CLEANUP], Operations, 10\n[CLEANUP], AverageLatency(us), 222109.2\n[CLEANUP], MinLatency(us), 1\n[CLEANUP], MaxLatency(us), 2222079\n[CLEANUP], 95thPercentileLatency(us), 2222079\n[CLEANUP], 99thPercentileLatency(us), 2222079\n[UPDATE], Operations, 50154\n[UPDATE], AverageLatency(us), 1012.9982055269769\n[UPDATE], MinLatency(us), 232\n[UPDATE], MaxLatency(us), 21951\n[UPDATE], 95thPercentileLatency(us), 1726\n[UPDATE], 99thPercentileLatency(us), 2233\n[UPDATE], Return=OK, 50154\n",
+=======
+  "rmw_ops": 49891.0,
+  "rmw_avg_latency_us": 2443.422801707723,
+  "rmw_p95_latency_us": 3699.0,
+  "rmw_p99_latency_us": 5815.0,
+  "read_ok": 100000.0,
+  "update_ok": 49891.0,
+  "insert_ok": 0.0,
+  "avg_cpu_percent": 69.50585019165315,
+  "max_cpu_percent": 85.60858435681965,
+  "min_cpu_percent": 0.6757,
+  "avg_mem_usage_mb": 2041.569247159091,
+  "max_mem_usage_mb": 2047.984375,
+  "min_mem_usage_mb": 1979.109375,
+  "total_blk_read_mb": 355.74609375,
+  "total_blk_write_mb": 50.2265625,
+  "total_net_rx_mb": 20.83917236328125,
+  "total_net_tx_mb": 110.14544677734375,
+  "run_duration_sec": 21.609110116958618,
+  "raw_ycsb_output": "[OVERALL], RunTime(ms), 21361\n[OVERALL], Throughput(ops/sec), 4681.428772061233\n[TOTAL_GCS_G1_Young_Generation], Count, 9\n[TOTAL_GC_TIME_G1_Young_Generation], Time(ms), 18\n[TOTAL_GC_TIME_%_G1_Young_Generation], Time(%), 0.08426571789710219\n[TOTAL_GCS_G1_Old_Generation], Count, 0\n[TOTAL_GC_TIME_G1_Old_Generation], Time(ms), 0\n[TOTAL_GC_TIME_%_G1_Old_Generation], Time(%), 0.0\n[TOTAL_GCs], Count, 9\n[TOTAL_GC_TIME], Time(ms), 18\n[TOTAL_GC_TIME_%], Time(%), 0.08426571789710219\n[READ], Operations, 100000\n[READ], AverageLatency(us), 1247.24174\n[READ], MinLatency(us), 536\n[READ], MaxLatency(us), 25567\n[READ], 95thPercentileLatency(us), 1983\n[READ], 99thPercentileLatency(us), 3009\n[READ], Return=OK, 100000\n[READ-MODIFY-WRITE], Operations, 49891\n[READ-MODIFY-WRITE], AverageLatency(us), 2443.422801707723\n[READ-MODIFY-WRITE], MinLatency(us), 1310\n[READ-MODIFY-WRITE], MaxLatency(us), 39871\n[READ-MODIFY-WRITE], 95thPercentileLatency(us), 3699\n[READ-MODIFY-WRITE], 99thPercentileLatency(us), 5815\n[CLEANUP], Operations, 10\n[CLEANUP], AverageLatency(us), 223134.3\n[CLEANUP], MinLatency(us), 4\n[CLEANUP], MaxLatency(us), 2232319\n[CLEANUP], 95thPercentileLatency(us), 2232319\n[CLEANUP], 99thPercentileLatency(us), 2232319\n[UPDATE], Operations, 49891\n[UPDATE], AverageLatency(us), 1193.1249924836143\n[UPDATE], MinLatency(us), 519\n[UPDATE], MaxLatency(us), 25727\n[UPDATE], 95thPercentileLatency(us), 1876\n[UPDATE], 99thPercentileLatency(us), 2743\n[UPDATE], Return=OK, 49891\n",
+  "resource_samples": [
+    {
+      "timestamp": 1774979162.001083,
+      "cpu_percent": 23.35120656980417,
+      "mem_usage_mb": 1979.109375,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 96.63619995117188,
+      "blk_read_mb": 3962.515625,
+      "blk_write_mb": 38020.68359375,
+      "net_rx_mb": 9943.266918182373,
+      "net_tx_mb": 1234.7686595916748
+    },
+    {
+      "timestamp": 1774979164.0257735,
+      "cpu_percent": 85.60858435681965,
+      "mem_usage_mb": 2047.9453125,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 99.99732971191406,
+      "blk_read_mb": 4085.453125,
+      "blk_write_mb": 38042.50390625,
+      "net_rx_mb": 9944.789525032043,
+      "net_tx_mb": 1242.8620281219482
+    },
+    {
+      "timestamp": 1774979166.0495808,
+      "cpu_percent": 84.08836601307189,
+      "mem_usage_mb": 2047.6875,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 99.9847412109375,
+      "blk_read_mb": 4194.58203125,
+      "blk_write_mb": 38054.98046875,
+      "net_rx_mb": 9947.01044178009,
+      "net_tx_mb": 1254.5649070739746
+    },
+    {
+      "timestamp": 1774979168.0702999,
+      "cpu_percent": 81.58964401294499,
+      "mem_usage_mb": 2047.83203125,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 99.9917984008789,
+      "blk_read_mb": 4262.04296875,
+      "blk_write_mb": 38062.76171875,
+      "net_rx_mb": 9949.247449874878,
+      "net_tx_mb": 1266.431676864624
+    },
+    {
+      "timestamp": 1774979170.0916088,
+      "cpu_percent": 82.19384615384615,
+      "mem_usage_mb": 2047.859375,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 99.99313354492188,
+      "blk_read_mb": 4293.41015625,
+      "blk_write_mb": 38064.58984375,
+      "net_rx_mb": 9951.723237991333,
+      "net_tx_mb": 1279.4972867965698
+    },
+    {
+      "timestamp": 1774979172.105525,
+      "cpu_percent": 80.38203125,
+      "mem_usage_mb": 2047.87109375,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 99.99370574951172,
+      "blk_read_mb": 4306.484375,
+      "blk_write_mb": 38065.3515625,
+      "net_rx_mb": 9954.220447540283,
+      "net_tx_mb": 1292.6723194122314
+    },
+    {
+      "timestamp": 1774979174.1306026,
+      "cpu_percent": 82.92938590820944,
+      "mem_usage_mb": 2047.984375,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 99.99923706054688,
+      "blk_read_mb": 4312.05078125,
+      "blk_write_mb": 38070.41015625,
+      "net_rx_mb": 9956.497941970825,
+      "net_tx_mb": 1304.7153282165527
+    },
+    {
+      "timestamp": 1774979176.1455874,
+      "cpu_percent": 80.62962866449512,
+      "mem_usage_mb": 2047.8984375,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 99.99504089355469,
+      "blk_read_mb": 4315.24609375,
+      "blk_write_mb": 38070.65625,
+      "net_rx_mb": 9959.047686576843,
+      "net_tx_mb": 1318.2235403060913
+    },
+    {
+      "timestamp": 1774979178.1707635,
+      "cpu_percent": 82.3045751633987,
+      "mem_usage_mb": 2047.89453125,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 99.9948501586914,
+      "blk_read_mb": 4317.2890625,
+      "blk_write_mb": 38070.78515625,
+      "net_rx_mb": 9961.574504852295,
+      "net_tx_mb": 1331.602946281433
+    },
+    {
+      "timestamp": 1774979180.193059,
+      "cpu_percent": 80.81138401559454,
+      "mem_usage_mb": 2047.5703125,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 99.97901916503906,
+      "blk_read_mb": 4318.21875,
+      "blk_write_mb": 38070.91015625,
+      "net_rx_mb": 9964.072242736816,
+      "net_tx_mb": 1344.7618532180786
+    },
+    {
+      "timestamp": 1774979182.215953,
+      "cpu_percent": 0.6757,
+      "mem_usage_mb": 2047.609375,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 99.98092651367188,
+      "blk_read_mb": 4318.26171875,
+      "blk_write_mb": 38070.91015625,
+      "net_rx_mb": 9964.106090545654,
+      "net_tx_mb": 1344.9141063690186
+    }
+  ],
+>>>>>>> origin/main
   "status": "success"
 }

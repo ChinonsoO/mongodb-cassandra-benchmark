@@ -9,6 +9,7 @@
   "series": "stress",
   "dataset_label": "1 GB",
   "repetition": 3,
+<<<<<<< HEAD
   "load_duration_sec": 32.14956498146057,
   "throughput_ops_sec": 18900.0189000189,
   "runtime_ms": 5291.0,
@@ -24,6 +25,57 @@
   "update_max_latency_us": 269055.0,
   "update_p95_latency_us": 4871.0,
   "update_p99_latency_us": 12687.0,
+=======
+  "environment": {
+    "captured_at_utc": "2026-03-31T14:56:10.430277+00:00",
+    "host": {
+      "hostname": "LAPTOP-EI5GQGDL",
+      "platform": "Windows",
+      "platform_release": "11",
+      "platform_version": "10.0.26200",
+      "machine": "AMD64",
+      "processor": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD",
+      "logical_cpus": 16
+    },
+    "runtime": {
+      "python_version": "3.12.2",
+      "python_executable": "C:\\Users\\User\\Documents\\School\\Fourth Year\\Winter Sem\\SENG 533 Software Performance Evaluation\\Final project\\mongodb-cassandra-benchmark\\venv\\Scripts\\python.exe",
+      "java_executable": "C:\\Users\\User\\AppData\\Local\\Programs\\Eclipse Adoptium\\jdk-17.0.5.8-hotspot\\bin\\java.exe",
+      "java_version": "openjdk version \"17.0.5\" 2022-10-18",
+      "ycsb_path": "C:\\Users\\User\\Documents\\School\\Fourth Year\\Winter Sem\\SENG 533 Software Performance Evaluation\\Final project\\mongodb-cassandra-benchmark\\ycsb-0.17.0"
+    },
+    "docker": {
+      "server_version": "25.0.2",
+      "operating_system": "Docker Desktop",
+      "architecture": "x86_64",
+      "engine_cpus": 16,
+      "engine_memory_mb": 11960.18,
+      "driver": "overlay2"
+    },
+    "target_container": {
+      "name": "ycsb-mongodb",
+      "image": "mongo:7.0",
+      "cpus": 2.0,
+      "cpuset_cpus": "0-1",
+      "memory_limit_mb": 2048.0
+    }
+  },
+  "load_duration_sec": 22.855976104736328,
+  "throughput_ops_sec": 16798.252981689904,
+  "runtime_ms": 5953.0,
+  "read_ops": 49798.0,
+  "read_avg_latency_us": 2322.254929916864,
+  "read_min_latency_us": 160.0,
+  "read_max_latency_us": 172799.0,
+  "read_p95_latency_us": 6927.0,
+  "read_p99_latency_us": 13119.0,
+  "update_ops": 50202.0,
+  "update_avg_latency_us": 2404.9288076172265,
+  "update_min_latency_us": 192.0,
+  "update_max_latency_us": 182271.0,
+  "update_p95_latency_us": 7015.0,
+  "update_p99_latency_us": 13055.0,
+>>>>>>> origin/main
   "insert_ops": 0.0,
   "insert_avg_latency_us": 0.0,
   "insert_p95_latency_us": 0.0,
@@ -32,6 +84,7 @@
   "rmw_avg_latency_us": 0.0,
   "rmw_p95_latency_us": 0.0,
   "rmw_p99_latency_us": 0.0,
+<<<<<<< HEAD
   "read_ok": 50330.0,
   "update_ok": 49670.0,
   "insert_ok": 0.0,
@@ -47,5 +100,68 @@
   "total_net_tx_mb": 58.51625061035156,
   "run_duration_sec": 5.396681070327759,
   "raw_ycsb_output": "mongo client connection created with mongodb://localhost:27017/ycsb?w=1\n[OVERALL], RunTime(ms), 5291\n[OVERALL], Throughput(ops/sec), 18900.0189000189\n[TOTAL_GCS_G1_Young_Generation], Count, 15\n[TOTAL_GC_TIME_G1_Young_Generation], Time(ms), 28\n[TOTAL_GC_TIME_%_G1_Young_Generation], Time(%), 0.5292005292005292\n[TOTAL_GCS_G1_Concurrent_GC], Count, 0\n[TOTAL_GC_TIME_G1_Concurrent_GC], Time(ms), 0\n[TOTAL_GC_TIME_%_G1_Concurrent_GC], Time(%), 0.0\n[TOTAL_GCS_G1_Old_Generation], Count, 0\n[TOTAL_GC_TIME_G1_Old_Generation], Time(ms), 0\n[TOTAL_GC_TIME_%_G1_Old_Generation], Time(%), 0.0\n[TOTAL_GCs], Count, 15\n[TOTAL_GC_TIME], Time(ms), 28\n[TOTAL_GC_TIME_%], Time(%), 0.5292005292005292\n[READ], Operations, 50330\n[READ], AverageLatency(us), 2398.951599443672\n[READ], MinLatency(us), 92\n[READ], MaxLatency(us), 270079\n[READ], 95thPercentileLatency(us), 4743\n[READ], 99thPercentileLatency(us), 11271\n[READ], Return=OK, 50330\n[CLEANUP], Operations, 50\n[CLEANUP], AverageLatency(us), 41.52\n[CLEANUP], MinLatency(us), 0\n[CLEANUP], MaxLatency(us), 2061\n[CLEANUP], 95thPercentileLatency(us), 1\n[CLEANUP], 99thPercentileLatency(us), 2061\n[UPDATE], Operations, 49670\n[UPDATE], AverageLatency(us), 2602.0705254680893\n[UPDATE], MinLatency(us), 97\n[UPDATE], MaxLatency(us), 269055\n[UPDATE], 95thPercentileLatency(us), 4871\n[UPDATE], 99thPercentileLatency(us), 12687\n[UPDATE], Return=OK, 49670\n",
+=======
+  "read_ok": 49798.0,
+  "update_ok": 50202.0,
+  "insert_ok": 0.0,
+  "avg_cpu_percent": 0.05048825398142774,
+  "max_cpu_percent": 0.07106145251396648,
+  "min_cpu_percent": 0.03009950248756219,
+  "avg_mem_usage_mb": 151.50390625,
+  "max_mem_usage_mb": 151.50390625,
+  "min_mem_usage_mb": 151.50390625,
+  "total_blk_read_mb": 0.0,
+  "total_blk_write_mb": 0.0,
+  "total_net_rx_mb": 0.0,
+  "total_net_tx_mb": 0.0,
+  "run_duration_sec": 6.210601806640625,
+  "raw_ycsb_output": "mongo client connection created with mongodb://localhost:27017/ycsb?w=1\n[OVERALL], RunTime(ms), 5953\n[OVERALL], Throughput(ops/sec), 16798.252981689904\n[TOTAL_GCS_G1_Young_Generation], Count, 14\n[TOTAL_GC_TIME_G1_Young_Generation], Time(ms), 53\n[TOTAL_GC_TIME_%_G1_Young_Generation], Time(%), 0.8903074080295649\n[TOTAL_GCS_G1_Old_Generation], Count, 0\n[TOTAL_GC_TIME_G1_Old_Generation], Time(ms), 0\n[TOTAL_GC_TIME_%_G1_Old_Generation], Time(%), 0.0\n[TOTAL_GCs], Count, 14\n[TOTAL_GC_TIME], Time(ms), 53\n[TOTAL_GC_TIME_%], Time(%), 0.8903074080295649\n[READ], Operations, 49798\n[READ], AverageLatency(us), 2322.254929916864\n[READ], MinLatency(us), 160\n[READ], MaxLatency(us), 172799\n[READ], 95thPercentileLatency(us), 6927\n[READ], 99thPercentileLatency(us), 13119\n[READ], Return=OK, 49798\n[CLEANUP], Operations, 50\n[CLEANUP], AverageLatency(us), 132.66\n[CLEANUP], MinLatency(us), 0\n[CLEANUP], MaxLatency(us), 6567\n[CLEANUP], 95thPercentileLatency(us), 3\n[CLEANUP], 99thPercentileLatency(us), 6567\n[UPDATE], Operations, 50202\n[UPDATE], AverageLatency(us), 2404.9288076172265\n[UPDATE], MinLatency(us), 192\n[UPDATE], MaxLatency(us), 182271\n[UPDATE], 95thPercentileLatency(us), 7015\n[UPDATE], 99thPercentileLatency(us), 13055\n[UPDATE], Return=OK, 50202\n",
+  "resource_samples": [
+    {
+      "timestamp": 1774968996.1302867,
+      "cpu_percent": 0.03009950248756219,
+      "mem_usage_mb": 151.50390625,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 7.397651672363281,
+      "blk_read_mb": 101.3671875,
+      "blk_write_mb": 11.1171875,
+      "net_rx_mb": 0.002719879150390625,
+      "net_tx_mb": 0.000347137451171875
+    },
+    {
+      "timestamp": 1774968998.1785104,
+      "cpu_percent": 0.06874221668742217,
+      "mem_usage_mb": 151.50390625,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 7.397651672363281,
+      "blk_read_mb": 101.3671875,
+      "blk_write_mb": 11.1171875,
+      "net_rx_mb": 0.002719879150390625,
+      "net_tx_mb": 0.000347137451171875
+    },
+    {
+      "timestamp": 1774969000.21735,
+      "cpu_percent": 0.07106145251396648,
+      "mem_usage_mb": 151.50390625,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 7.397651672363281,
+      "blk_read_mb": 101.3671875,
+      "blk_write_mb": 11.1171875,
+      "net_rx_mb": 0.002719879150390625,
+      "net_tx_mb": 0.000347137451171875
+    },
+    {
+      "timestamp": 1774969002.2460952,
+      "cpu_percent": 0.032049844236760126,
+      "mem_usage_mb": 151.50390625,
+      "mem_limit_mb": 2048.0,
+      "mem_percent": 7.397651672363281,
+      "blk_read_mb": 101.3671875,
+      "blk_write_mb": 11.1171875,
+      "net_rx_mb": 0.002719879150390625,
+      "net_tx_mb": 0.000347137451171875
+    }
+  ],
+>>>>>>> origin/main
   "status": "success"
 }

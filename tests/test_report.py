@@ -25,6 +25,8 @@ def sample_aggregated():
             "read_p95_latency_us_mean": 1200.0, "read_p95_latency_us_std": 50.0,
             "read_p99_latency_us_mean": 3500.0, "read_p99_latency_us_std": 100.0,
             "update_avg_latency_us_mean": 550.0, "update_avg_latency_us_std": 30.0,
+            "update_p95_latency_us_mean": 1500.0, "update_p95_latency_us_std": 75.0,
+            "update_p99_latency_us_mean": 3000.0, "update_p99_latency_us_std": 125.0,
             "avg_cpu_percent_mean": 25.0, "avg_mem_usage_mb_mean": 256.0,
         },
         {
@@ -35,6 +37,8 @@ def sample_aggregated():
             "read_p95_latency_us_mean": 1500.0, "read_p95_latency_us_std": 60.0,
             "read_p99_latency_us_mean": 4000.0, "read_p99_latency_us_std": 120.0,
             "update_avg_latency_us_mean": 700.0, "update_avg_latency_us_std": 40.0,
+            "update_p95_latency_us_mean": 1800.0, "update_p95_latency_us_std": 85.0,
+            "update_p99_latency_us_mean": 3400.0, "update_p99_latency_us_std": 140.0,
             "avg_cpu_percent_mean": 35.0, "avg_mem_usage_mb_mean": 512.0,
         },
     ]
@@ -85,6 +89,7 @@ class TestGenerateSummaryTable:
         table = generate_summary_table(sample_aggregated)
         assert "10,000" in table or "10000" in table
         assert "8,000" in table or "8000" in table
+        assert "Update" in table
 
     def test_empty_results(self):
         """Should handle empty results."""
@@ -198,6 +203,51 @@ class TestGenerateReport:
         assert "BENCHMARK" in content
         assert "mongodb" in content
         assert "cassandra" in content
+
+    def test_report_includes_environment_summary(self, sample_aggregated, tmp_results_dir):
+        """Report should include environment metadata when raw results are provided."""
+        all_results = {"workload": sample_aggregated}
+        raw_results = {
+            "workload": [
+                {
+                    "environment": {
+                        "host": {
+                            "hostname": "bench-host",
+                            "platform": "Windows",
+                            "platform_release": "11",
+                            "machine": "AMD64",
+                            "logical_cpus": 8,
+                        },
+                        "runtime": {
+                            "python_version": "3.12.1",
+                            "java_version": 'openjdk version "21.0.2"',
+                            "ycsb_path": "ycsb-0.17.0",
+                        },
+                        "docker": {
+                            "server_version": "28.0.1",
+                            "operating_system": "Docker Desktop",
+                            "engine_cpus": 8,
+                            "engine_memory_mb": 16384,
+                        },
+                        "target_container": {
+                            "name": "ycsb-mongodb",
+                            "image": "mongo:7.0",
+                            "cpus": 2.0,
+                            "cpuset_cpus": "0-1",
+                            "memory_limit_mb": 2048,
+                        },
+                    }
+                }
+            ]
+        }
+        generate_report(all_results, tmp_results_dir, raw_results=raw_results)
+
+        with open(os.path.join(tmp_results_dir, "summary_report.txt")) as f:
+            content = f.read()
+
+        assert "Environment Summary" in content
+        assert "bench-host" in content
+        assert "2.0 CPU quota" in content
 
     def test_concurrency_report_includes_saturation(
         self, sample_concurrency_results, tmp_results_dir

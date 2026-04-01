@@ -12,6 +12,7 @@ from src.analysis.visualizer import (
     plot_latency_vs_concurrency,
     plot_resource_utilization,
     plot_dataset_scaling,
+    generate_resource_charts,
     generate_all_charts,
     COLORS,
 )
@@ -160,15 +161,18 @@ class TestPlotResourceUtilization:
         """Should handle time-series resource data."""
         samples = [
             {"timestamp": 0.0, "cpu_percent": 20.0,
-             "mem_usage_mb": 200, "blk_read_mb": 0, "blk_write_mb": 0},
+             "mem_usage_mb": 200, "blk_read_mb": 0, "blk_write_mb": 0,
+             "net_rx_mb": 0, "net_tx_mb": 0},
             {"timestamp": 1.0, "cpu_percent": 40.0,
-             "mem_usage_mb": 250, "blk_read_mb": 5, "blk_write_mb": 2},
+             "mem_usage_mb": 250, "blk_read_mb": 5, "blk_write_mb": 2,
+             "net_rx_mb": 1, "net_tx_mb": 0.5},
             {"timestamp": 2.0, "cpu_percent": 35.0,
-             "mem_usage_mb": 260, "blk_read_mb": 10, "blk_write_mb": 4},
+             "mem_usage_mb": 260, "blk_read_mb": 10, "blk_write_mb": 4,
+             "net_rx_mb": 2, "net_tx_mb": 1.5},
         ]
         output = os.path.join(tmp_results_dir, "resource.png")
         mock_fig = MagicMock()
-        mock_axes = [MagicMock(), MagicMock(), MagicMock()]
+        mock_axes = [MagicMock(), MagicMock(), MagicMock(), MagicMock()]
         mock_plt.subplots.return_value = (mock_fig, mock_axes)
 
         plot_resource_utilization(samples, output)
@@ -241,3 +245,26 @@ class TestGenerateAllCharts:
         """Should handle empty results gracefully."""
         generate_all_charts({}, tmp_results_dir)
         # Should not raise
+
+
+class TestGenerateResourceCharts:
+    """Tests for raw resource chart generation."""
+
+    @patch("src.analysis.visualizer.plot_resource_utilization")
+    def test_generates_per_run_charts(self, mock_plot_resource, tmp_results_dir):
+        raw_results = {
+            "workload": [
+                {
+                    "run_id": "mongodb_workload_a_rep1",
+                    "database": "mongodb",
+                    "workload": "workload_a",
+                    "repetition": 1,
+                    "resource_samples": [{"timestamp": 1.0, "cpu_percent": 10.0}],
+                }
+            ]
+        }
+
+        generated = generate_resource_charts(raw_results, tmp_results_dir)
+
+        assert len(generated) == 1
+        mock_plot_resource.assert_called_once()
