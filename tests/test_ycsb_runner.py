@@ -216,3 +216,66 @@ class TestGetBindingName:
     def test_unknown_raises(self):
         with pytest.raises(ValueError):
             YCSBRunner.get_binding_name("redis")
+
+
+
+class TestBuildCommandExtras:
+    """Additional tests for build_command edge cases."""
+
+    def test_java_home_invalid_fallback(self):
+        """Should fall back to system java if JAVA_HOME is invalid."""
+        runner = YCSBRunner.__new__(YCSBRunner)
+        runner.ycsb_path = __import__("pathlib").Path("ycsb-0.17.0")
+        runner._java_home = "/opt/java17"  # invalid path
+
+        cmd = runner.build_command("run", "mongodb", "wl.properties")
+
+        assert cmd[0] == "java"
+
+
+class TestLoadRunEdgeCases:
+    """Edge cases for load and run phases."""
+
+    @patch("src.ycsb_runner.subprocess.run")
+    def test_run_with_partial_output(self, mock_run):
+        """Runner should return stdout even if it is incomplete."""
+        partial_output = "[READ], Operations, 100\n[UPDATE], Operations"
+        mock_run.return_value = MagicMock(returncode=0, stdout=partial_output, stderr="")
+
+        runner = YCSBRunner.__new__(YCSBRunner)
+        runner.ycsb_path = __import__("pathlib").Path("ycsb-0.17.0")
+        runner._java_home = None
+
+        result = runner.run("mongodb", "wl.properties")
+        assert "[READ]" in result
+        assert "[UPDATE]" in result
+
+    @patch("src.ycsb_runner.subprocess.run")
+    def test_stderr_but_successful_returncode(self, mock_run):
+        """Runner should succeed if returncode is 0 even if stderr has text."""
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="Success output", stderr="Warning: minor issue"
+        )
+
+        runner = YCSBRunner.__new__(YCSBRunner)
+        runner.ycsb_path = __import__("pathlib").Path("ycsb-0.17.0")
+        runner._java_home = None
+
+        result = runner.load("mongodb", "wl.properties")
+        assert "Success output" in result
+
+
+class TestBindingPropertiesExtras:
+    """Tests for extended binding properties."""
+
+    def test_mongodb_extra_property(self):
+        """Should allow overriding default properties."""
+        props = YCSBRunner.get_binding_properties("mongodb")
+        props["mongodb.username"] = "admin"
+        assert props["mongodb.username"] == "admin"
+
+    def test_cassandra_extra_property(self):
+        """Should allow overriding Cassandra consistency levels."""
+        props = YCSBRunner.get_binding_properties("cassandra")
+        props["cassandra.readconsistencylevel"] = "QUORUM"
+        assert props["cassandra.readconsistencylevel"] == "QUORUM"

@@ -9,6 +9,23 @@
   "series": "stress",
   "dataset_label": "1 GB",
   "repetition": 1,
+<<<<<<< HEAD
+  "load_duration_sec": 112.44124507904053,
+  "throughput_ops_sec": 7817.997029161129,
+  "runtime_ms": 12791.0,
+  "read_ops": 50290.0,
+  "read_avg_latency_us": 1075.305985285345,
+  "read_min_latency_us": 177.0,
+  "read_max_latency_us": 23935.0,
+  "read_p95_latency_us": 1650.0,
+  "read_p99_latency_us": 2519.0,
+  "update_ops": 49710.0,
+  "update_avg_latency_us": 974.9525447596058,
+  "update_min_latency_us": 154.0,
+  "update_max_latency_us": 23903.0,
+  "update_p95_latency_us": 1420.0,
+  "update_p99_latency_us": 2063.0,
+=======
   "environment": {
     "captured_at_utc": "2026-03-31T15:49:02.726798+00:00",
     "host": {
@@ -58,6 +75,7 @@
   "update_max_latency_us": 18671.0,
   "update_p95_latency_us": 1874.0,
   "update_p99_latency_us": 2619.0,
+>>>>>>> origin/main
   "insert_ops": 0.0,
   "insert_avg_latency_us": 0.0,
   "insert_p95_latency_us": 0.0,
@@ -66,6 +84,23 @@
   "rmw_avg_latency_us": 0.0,
   "rmw_p95_latency_us": 0.0,
   "rmw_p99_latency_us": 0.0,
+<<<<<<< HEAD
+  "read_ok": 50290.0,
+  "update_ok": 49710.0,
+  "insert_ok": 0.0,
+  "avg_cpu_percent": 78.03048900684887,
+  "max_cpu_percent": 111.88477064220183,
+  "min_cpu_percent": 1.2227,
+  "avg_mem_usage_mb": 2047.541294642857,
+  "max_mem_usage_mb": 2047.953125,
+  "min_mem_usage_mb": 2046.48046875,
+  "total_blk_read_mb": 744.51171875,
+  "total_blk_write_mb": 134.26953125,
+  "total_net_rx_mb": 15.23021411895752,
+  "total_net_tx_mb": 53.21529674530029,
+  "run_duration_sec": 12.920332670211792,
+  "raw_ycsb_output": "[OVERALL], RunTime(ms), 12791\n[OVERALL], Throughput(ops/sec), 7817.997029161129\n[TOTAL_GCS_G1_Young_Generation], Count, 6\n[TOTAL_GC_TIME_G1_Young_Generation], Time(ms), 15\n[TOTAL_GC_TIME_%_G1_Young_Generation], Time(%), 0.11726995543741693\n[TOTAL_GCS_G1_Concurrent_GC], Count, 0\n[TOTAL_GC_TIME_G1_Concurrent_GC], Time(ms), 0\n[TOTAL_GC_TIME_%_G1_Concurrent_GC], Time(%), 0.0\n[TOTAL_GCS_G1_Old_Generation], Count, 0\n[TOTAL_GC_TIME_G1_Old_Generation], Time(ms), 0\n[TOTAL_GC_TIME_%_G1_Old_Generation], Time(%), 0.0\n[TOTAL_GCs], Count, 6\n[TOTAL_GC_TIME], Time(ms), 15\n[TOTAL_GC_TIME_%], Time(%), 0.11726995543741693\n[READ], Operations, 50290\n[READ], AverageLatency(us), 1075.305985285345\n[READ], MinLatency(us), 177\n[READ], MaxLatency(us), 23935\n[READ], 95thPercentileLatency(us), 1650\n[READ], 99thPercentileLatency(us), 2519\n[READ], Return=OK, 50290\n[CLEANUP], Operations, 10\n[CLEANUP], AverageLatency(us), 222722.3\n[CLEANUP], MinLatency(us), 0\n[CLEANUP], MaxLatency(us), 2228223\n[CLEANUP], 95thPercentileLatency(us), 2228223\n[CLEANUP], 99thPercentileLatency(us), 2228223\n[UPDATE], Operations, 49710\n[UPDATE], AverageLatency(us), 974.9525447596058\n[UPDATE], MinLatency(us), 154\n[UPDATE], MaxLatency(us), 23903\n[UPDATE], 95thPercentileLatency(us), 1420\n[UPDATE], 99thPercentileLatency(us), 2063\n[UPDATE], Return=OK, 49710\n",
+=======
   "read_ok": 50107.0,
   "update_ok": 49893.0,
   "insert_ok": 0.0,
@@ -171,5 +206,6 @@
       "net_tx_mb": 5443.59065246582
     }
   ],
+>>>>>>> origin/main
   "status": "success"
 }

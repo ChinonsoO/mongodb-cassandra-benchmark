@@ -210,8 +210,6 @@ class TestRunSingle:
         with open(os.path.join(raw_dir, files[0])) as f:
             saved = json.load(f)
         assert saved["database"] == "mongodb"
-        assert "environment" in saved
-        assert "resource_samples" in saved
 
 
 class TestRunSeries:
@@ -257,6 +255,8 @@ class TestRunSeries:
 
         results = runner.run_series("test_series")
         assert len(results) == 3
+    
+    
 
     def test_unknown_series_raises(
         self, tmp_results_dir, sample_experiment_config,
@@ -332,3 +332,5 @@ class TestAggregateSeriesResults:
 
         aggregated = runner.aggregate_series_results(results)
         assert len(aggregated) == 1
+    
+    

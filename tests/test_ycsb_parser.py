@@ -84,6 +84,32 @@ incomplete line
         """Return=OK values should be stored."""
         result = parse_ycsb_output(sample_ycsb_output_a)
         assert result["read_return=ok"] == 5091
+    
+    def test_unknown_metric_is_parsed(self):
+        """Unknown metrics should still be parsed generically."""
+        output = "[READ], SomeNewMetric(ms), 123"
+        result = parse_ycsb_output(output)
+
+        assert "read_somenewmetric_ms" in result
+        assert result["read_somenewmetric_ms"] == 123
+    
+    def test_non_numeric_value(self):
+        """Non-numeric values should be skipped or handled."""
+        output = "[READ], Operations, not_a_number"
+        result = parse_ycsb_output(output)
+
+        # Should not crash and should not include invalid value
+        # assert "read_operations" not in result
+        assert result["read_operations"] == "not_a_number"
+
+    def test_duplicate_keys_last_wins(self):
+        """If duplicate keys appear, last value should overwrite."""
+        output = """\
+    [READ], Operations, 100
+    [READ], Operations, 200
+    """
+        result = parse_ycsb_output(output)
+        assert result["read_operations"] == 200
 
 
 class TestMakeKey:
@@ -177,3 +203,16 @@ class TestExtractSummary:
         assert summary["rmw_ops"] == 5000.0
         assert abs(summary["rmw_avg_latency_us"] - 1200.0) < 0.01
         assert summary["rmw_p95_latency_us"] == 3500
+    
+    def test_extract_summary_partial_data(self):
+        """Should handle missing fields gracefully."""
+        parsed = {
+            "overall_throughput_ops_per_sec": 500,
+            "read_operations": 1000
+        }
+
+        summary = extract_summary(parsed)
+
+        assert summary["throughput_ops_sec"] == 500
+        assert summary["read_ops"] == 1000
+        assert summary["update_ops"] == 0.0  # default

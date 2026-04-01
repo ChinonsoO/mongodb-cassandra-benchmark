@@ -9,6 +9,11 @@
   "series": "bulk_load",
   "dataset_label": "1 GB",
   "repetition": 3,
+<<<<<<< HEAD
+  "load_duration_sec": 39.427762031555176,
+  "throughput_ops_sec": 21353.833013025836,
+  "runtime_ms": 4683.0,
+=======
   "environment": {
     "captured_at_utc": "2026-03-31T14:34:19.001231+00:00",
     "host": {
@@ -46,6 +51,7 @@
   "load_duration_sec": 27.643268823623657,
   "throughput_ops_sec": 21468.441391155004,
   "runtime_ms": 4658.0,
+>>>>>>> origin/main
   "read_ops": 0.0,
   "read_avg_latency_us": 0.0,
   "read_min_latency_us": 0.0,
@@ -59,9 +65,15 @@
   "update_p95_latency_us": 0.0,
   "update_p99_latency_us": 0.0,
   "insert_ops": 99000.0,
+<<<<<<< HEAD
+  "insert_avg_latency_us": 438.2750404040404,
+  "insert_p95_latency_us": 794.0,
+  "insert_p99_latency_us": 1352.0,
+=======
   "insert_avg_latency_us": 307.0329797979798,
   "insert_p95_latency_us": 462.0,
   "insert_p99_latency_us": 864.0,
+>>>>>>> origin/main
   "rmw_ops": 0.0,
   "rmw_avg_latency_us": 0.0,
   "rmw_p95_latency_us": 0.0,
@@ -69,6 +81,20 @@
   "read_ok": 0.0,
   "update_ok": 0.0,
   "insert_ok": 99000.0,
+<<<<<<< HEAD
+  "avg_cpu_percent": 199.76331875549667,
+  "max_cpu_percent": 284.7969851951548,
+  "min_cpu_percent": 132.60252252252252,
+  "avg_mem_usage_mb": 2047.5833333333333,
+  "max_mem_usage_mb": 2047.98828125,
+  "min_mem_usage_mb": 2046.93359375,
+  "total_blk_read_mb": 0.0,
+  "total_blk_write_mb": 376.3125,
+  "total_net_rx_mb": 118.58295917510986,
+  "total_net_tx_mb": 9.513513565063477,
+  "run_duration_sec": 4.783934116363525,
+  "raw_ycsb_output": "mongo client connection created with mongodb://localhost:27017/ycsb?w=1\n[OVERALL], RunTime(ms), 4683\n[OVERALL], Throughput(ops/sec), 21353.833013025836\n[TOTAL_GCS_G1_Young_Generation], Count, 10\n[TOTAL_GC_TIME_G1_Young_Generation], Time(ms), 13\n[TOTAL_GC_TIME_%_G1_Young_Generation], Time(%), 0.2775998291693359\n[TOTAL_GCS_G1_Concurrent_GC], Count, 0\n[TOTAL_GC_TIME_G1_Concurrent_GC], Time(ms), 0\n[TOTAL_GC_TIME_%_G1_Concurrent_GC], Time(%), 0.0\n[TOTAL_GCS_G1_Old_Generation], Count, 0\n[TOTAL_GC_TIME_G1_Old_Generation], Time(ms), 0\n[TOTAL_GC_TIME_%_G1_Old_Generation], Time(%), 0.0\n[TOTAL_GCs], Count, 10\n[TOTAL_GC_TIME], Time(ms), 13\n[TOTAL_GC_TIME_%], Time(%), 0.2775998291693359\n[CLEANUP], Operations, 10\n[CLEANUP], AverageLatency(us), 198.1\n[CLEANUP], MinLatency(us), 0\n[CLEANUP], MaxLatency(us), 1974\n[CLEANUP], 95thPercentileLatency(us), 1974\n[CLEANUP], 99thPercentileLatency(us), 1974\n[INSERT], Operations, 99000\n[INSERT], AverageLatency(us), 438.2750404040404\n[INSERT], MinLatency(us), 114\n[INSERT], MaxLatency(us), 10447\n[INSERT], 95thPercentileLatency(us), 794\n[INSERT], 99thPercentileLatency(us), 1352\n[INSERT], Return=OK, 99000\n[INSERT], Return=ERROR, 1000\n[INSERT-FAILED], Operations, 1000\n[INSERT-FAILED], AverageLatency(us), 1504.405\n[INSERT-FAILED], MinLatency(us), 338\n[INSERT-FAILED], MaxLatency(us), 32575\n[INSERT-FAILED], 95thPercentileLatency(us), 2819\n[INSERT-FAILED], 99thPercentileLatency(us), 5063\n",
+=======
   "avg_cpu_percent": 0.04975585019681276,
   "max_cpu_percent": 0.06276077451592754,
   "min_cpu_percent": 0.03036204744069913,
@@ -116,5 +142,6 @@
       "net_tx_mb": 0.000347137451171875
     }
   ],
+>>>>>>> origin/main
   "status": "success"
 }

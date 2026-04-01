@@ -1,0 +1,14 @@
+{
+  "run_id": "mongodb_workload_a_t10_r1000000_rep1",
+  "database": "mongodb",
+  "workload": "workload_a",
+  "workload_label": "Workload A (Update Heavy)",
+  "threads": 10,
+  "record_count": 1000000,
+  "operation_count": 100000,
+  "series": "workload",
+  "dataset_label": "1 GB",
+  "repetition": 1,
+  "status": "error",
+  "error": "Failed to reset MongoDB: localhost:27017: [Errno 61] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 69cc5683ce16fa43aeac8790, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 61] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>"
+}
