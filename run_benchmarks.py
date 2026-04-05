@@ -104,6 +104,14 @@ def main() -> int:
     setup_logging(args.verbose)
     logger = logging.getLogger(__name__)
 
+    # Determine results directory with incrementing number
+    results_base = Path(args.results_dir)
+    results_base.mkdir(parents=True, exist_ok=True)
+    existing_runs = [d for d in results_base.iterdir() if d.is_dir() and d.name.isdigit()]
+    next_run_num = max((int(d.name) for d in existing_runs), default=0) + 1
+    results_dir = results_base / str(next_run_num)
+    results_dir.mkdir(parents=True)
+
     # Load configuration
     try:
         config = load_experiment_config(args.config)
@@ -145,7 +153,7 @@ def main() -> int:
     logger.info("=" * 60)
     logger.info(f"Series: {', '.join(series_to_run)}")
     logger.info(f"Database: {args.db}")
-    logger.info(f"Results directory: {args.results_dir}")
+    logger.info(f"Results directory: {results_dir}")
 
     # Start Docker containers
     if not args.skip_docker:
@@ -175,11 +183,11 @@ def main() -> int:
         config=config,
         docker_manager=docker_manager,
         ycsb_runner=ycsb_runner,
-        results_dir=args.results_dir,
+        results_dir=str(results_dir),
     )
 
     all_results = {}
-    analysis_dir = str(Path(args.results_dir) / "analysis")
+    analysis_dir = str(results_dir / "analysis")
     start_time = time.time()
 
     for series_name in series_to_run:
