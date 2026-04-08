@@ -1,0 +1,14 @@
+{
+  "run_id": "cassandra_workload_stress_t100_r1000000_rep3",
+  "database": "cassandra",
+  "workload": "workload_stress",
+  "workload_label": "Stress Test (Workload A)",
+  "threads": 100,
+  "record_count": 1000000,
+  "operation_count": 100000,
+  "series": "stress",
+  "dataset_label": "1 GB",
+  "repetition": 3,
+  "status": "error",
+  "error": "Failed to reset Cassandra: ('Unable to connect to any servers', {'::1:9042': OperationTimedOut('errors=Timed out creating connection (5 seconds), last_host=None'), '127.0.0.1:9042': OperationTimedOut('errors=Timed out creating connection (5 seconds), last_host=None')})"
+}
